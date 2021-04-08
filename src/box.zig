@@ -72,7 +72,7 @@ pub fn push(buffer: Buffer) (Allocator.Error || ErrorSet.Utf8Encode || ErrorSet.
             if (last_touched != col)
                 try term.cursorTo(row, col);
 
-            last_touched = col+1;
+            last_touched = col + 1;
 
             const cell = buffer.cell(row, col);
             front.cellRef(row, col).* = cell;
@@ -307,6 +307,37 @@ pub const Buffer = struct {
 
             var self_col_idx = col_num;
             var other_col_idx: usize = 0;
+
+            while (self_col_idx < self.width and other_col_idx < other.width) : ({
+                self_col_idx += 1;
+                other_col_idx += 1;
+            }) {
+                if (self_col_idx < 0) continue;
+
+                self.cellRef(
+                    @intCast(usize, self_row_idx),
+                    @intCast(usize, self_col_idx),
+                ).* = other.cell(other_row_idx, other_col_idx);
+            }
+        }
+    }
+
+    // draw the contents of 'other' on top of the contents of self at the provided
+    // offset. anything out of bounds of the destination is ignored. row_num and col_num
+    // are still 1-indexed; this means 0 is out of bounds by 1, and -1 is out of bounds
+    // by 2. This may change.
+    pub fn blitFrom(self: *Buffer, other: Buffer, row_num: isize, col_num: isize, other_row_num: usize, other_col_num: usize) void {
+        var self_row_idx = row_num;
+        var other_row_idx: usize = other_row_num;
+
+        while (self_row_idx < self.height and other_row_idx < other.height) : ({
+            self_row_idx += 1;
+            other_row_idx += 1;
+        }) {
+            if (self_row_idx < 0) continue;
+
+            var self_col_idx = col_num;
+            var other_col_idx: usize = other_col_num;
 
             while (self_col_idx < self.width and other_col_idx < other.width) : ({
                 self_col_idx += 1;
