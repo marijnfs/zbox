@@ -58,7 +58,7 @@ pub fn push(buffer: Buffer) (Allocator.Error || ErrorSet.Utf8Encode || ErrorSet.
     //try term.beginSync();
     while (row < buffer.height) : (row += 1) {
         var col: usize = 0;
-        var last_touched: usize = buffer.width;       // out of bounds, can't match col
+        var last_touched: usize = buffer.width; // out of bounds, can't match col
         while (col < buffer.width) : (col += 1) {
 
             // go to the next character if these are the same.
@@ -318,6 +318,51 @@ pub const Buffer = struct {
                     @intCast(usize, self_row_idx),
                     @intCast(usize, self_col_idx),
                 ).* = other.cell(other_row_idx, other_col_idx);
+            }
+        }
+    }
+
+    const Area = struct {
+        row_num: isize = 0,
+        col_num: isize = 0,
+        rows: isize = -1,
+        cols: isize = -1,
+    };
+
+    pub fn blitFrom(self: *Buffer, other: Buffer, target: Area, source: Area) void {
+        var self_row_idx = target.row_num;
+        var other_row_idx = source.row_num;
+
+        var rows: usize = 0;
+        while (self_row_idx < self.height and other_row_idx < other.height) : ({
+            self_row_idx += 1;
+            other_row_idx += 1;
+            rows += 1;
+        }) {
+            if (self_row_idx < 0) continue;
+
+            if ((target.rows != -1 and rows >= target.rows) or
+                (source.rows != -1 and rows >= source.rows))
+                break;
+
+            var self_col_idx = target.col_num;
+            var other_col_idx = source.col_num;
+
+            var cols: usize = 0;
+            while (self_col_idx < self.width and other_col_idx < other.width) : ({
+                self_col_idx += 1;
+                other_col_idx += 1;
+                cols += 1;
+            }) {
+                if (self_col_idx < 0) continue;
+                if ((target.cols != -1 and cols >= target.cols) or
+                    (source.cols != -1 and cols >= source.cols))
+                    break;
+
+                self.cellRef(
+                    @intCast(usize, self_row_idx),
+                    @intCast(usize, self_col_idx),
+                ).* = other.cell(@intCast(usize, other_row_idx), @intCast(usize, other_col_idx));
             }
         }
     }
