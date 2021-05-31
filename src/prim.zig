@@ -11,10 +11,10 @@ const Allocator = mem.Allocator;
 
 usingnamespace @import("util.zig");
 
-//! the primitive terminal module is mainly responsible for providing a simple
-//! and portable interface to pseudo terminal IO and control primitives to
-//! higher level modules. You probably shouldn't be using this directly from
-//! application code.
+// the primitive terminal module is mainly responsible for providing a simple
+// and portable interface to pseudo terminal IO and control primitives to
+// higher level modules. You probably shouldn't be using this directly from
+// application code.
 
 /// Input events
 pub const Event = union(enum) {
@@ -198,7 +198,7 @@ pub fn setup(alloc: *Allocator) ErrorSet.Setup!void {
     termios.iflag &= ~@as(
         os.tcflag_t,
         os.IGNBRK | os.BRKINT | os.PARMRK | os.ISTRIP |
-        os.INLCR | os.IGNCR | os.ICRNL | os.IXON,
+            os.INLCR | os.IGNCR | os.ICRNL | os.IXON,
     );
     termios.lflag &= ~@as(
         os.tcflag_t,
@@ -225,8 +225,8 @@ pub fn setup(alloc: *Allocator) ErrorSet.Setup!void {
 }
 
 // set terminal input maximum wait time in 1/10 seconds unit, zero is no wait
-pub fn setTimeout(tenths:u8) ErrorSet.Termios!void {
-    const handle = state().tty.in.context.handle; 
+pub fn setTimeout(tenths: u8) ErrorSet.Termios!void {
+    const handle = state().tty.in.context.handle;
 
     var termios = try os.tcgetattr(handle);
     termios.cc[VTIME] = tenths;
@@ -310,7 +310,7 @@ const TermState = struct {
 };
 var termState: ?TermState = null;
 
-fn state() callconv(.Inline) *TermState {
+inline fn state() *TermState {
     if (std.debug.runtime_safety) {
         if (termState) |*self| return self else @panic("terminal is not initialized");
     } else return &termState.?;
